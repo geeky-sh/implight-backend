@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"implight-backend/handlers"
+	"implight-backend/repositories"
+	"implight-backend/usecases"
 	"log"
 	"net/http"
 	"os"
@@ -37,7 +39,10 @@ func main() {
 	hh := handlers.NewHealthHandler(db)
 	r.Mount("/metrics", hh.Routes())
 
-	ah := handlers.NewAccountHandler(db)
+	ar := repositories.NewAccountRepository(db)
+	tr := repositories.NewTokenRepository(db)
+	auc := usecases.NewAccountUsecase(ar, tr)
+	ah := handlers.NewAccountHandler(db, auc)
 	r.Mount("/account", ah.Routes())
 
 	http.ListenAndServe(":3000", r)

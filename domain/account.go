@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	ID        string
+	ID        int
 	Email     string
 	Name      string
 	Picture   string
@@ -21,7 +21,7 @@ type AccessToken struct {
 	IDToken   string    `json:"id_token"`
 	IssuedAt  time.Time `json:"expires_at"`
 	ExpiresAt time.Time `json:"issued_at"`
-	UserID    string    `json:"-"`
+	UserID    int       `json:"-"`
 }
 
 type AccountUsecase interface {

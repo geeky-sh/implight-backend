@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 	"implight-backend/domain"
 	"implight-backend/utils"
 	"time"
@@ -32,13 +33,17 @@ func (u *accountUsecase) LogIn(ctx context.Context, token string, pl *idtoken.Pa
 		return res, err
 	} else if err != nil {
 		// create user
-		req := domain.User{Email: pl.Claims["email"].(string), Name: pl.Claims["name"].(string), CreatedAt: time.Now(), UpdatedAt: time.Now()}
+		req := domain.User{
+			Email: pl.Claims["email"].(string), Name: pl.Claims["name"].(string),
+			CreatedAt: time.Now(), UpdatedAt: time.Now(), Picture: pl.Claims["picture"].(string)}
 		user, err = u.arepo.Create(ctx, req)
 		if err != nil {
 			return res, err
 		}
 	}
 
+	fmt.Println(token)
+	fmt.Printf("%d", len(token))
 	tkreq := domain.AccessToken{UserID: user.ID, IssuedAt: time.Unix(pl.IssuedAt, 0), ExpiresAt: time.Unix(pl.Expires, 0), IDToken: token}
 	res, err = u.trepo.Create(ctx, tkreq)
 	if err != nil {

@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"fmt"
+	"implight-backend/domain"
 	"implight-backend/utils"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,10 +12,11 @@ import (
 
 type accountHandler struct {
 	db *pgxpool.Pool
+	uc domain.AccountUsecase
 }
 
-func NewAccountHandler(db *pgxpool.Pool) accountHandler {
-	return accountHandler{db: db}
+func NewAccountHandler(db *pgxpool.Pool, uc domain.AccountUsecase) accountHandler {
+	return accountHandler{db: db, uc: uc}
 }
 
 func (h *accountHandler) Routes() http.Handler {
@@ -37,17 +37,19 @@ func (h *accountHandler) Callback(w http.ResponseWriter, r *http.Request) {
 		utils.WriteMsgRes(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	token := r.FormValue("credential")
 
-	payload, err := idtoken.Validate(ctx, r.FormValue("credential"), "79775009631-ba2k1s28mru34jo8ephd50h15ouink6o.apps.googleusercontent.com")
+	payload, err := idtoken.Validate(ctx, token, "79775009631-ba2k1s28mru34jo8ephd50h15ouink6o.apps.googleusercontent.com")
 	if err != nil {
-		panic(err)
+		utils.WriteMsgRes(w, http.StatusBadRequest, "Payload Validation Failed")
+		return
 	}
 
-	ea := time.Unix(payload.Expires, 0)
-	fmt.Println(ea)
+	res, aerr := h.uc.LogIn(ctx, token, payload)
+	if aerr != nil {
+		utils.WriteAppErrRes(w, aerr)
+		return
+	}
 
-	ia := time.Unix(payload.IssuedAt, 0)
-	fmt.Println(ia)
-
-	utils.WriteRes(w, http.StatusOK, payload)
+	utils.WriteRes(w, http.StatusOK, res)
 }

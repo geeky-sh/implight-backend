@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS tokens (
-    id_token VARCHAR(64) NOT NULL,
+    id_token VARCHAR(36) NOT NULL,
     issued_at timestamp NOT NULL,
     expires_at timestamp NOT NULL,
     user_id int NOT NULL,
