@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"implight-backend/domain"
 	"implight-backend/utils"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -32,21 +32,22 @@ func (h *accountHandler) LoginViaGooglePage(w http.ResponseWriter, r *http.Reque
 
 func (h *accountHandler) Callback(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	req := domain.GoogleCallback{}
 
 	if err := r.ParseForm(); err != nil {
 		utils.WriteMsgRes(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	req.Credential = r.FormValue("credential")
-	req.GCSRFToken = r.FormValue("g_csrf_token")
-
-	payload, err := idtoken.Validate(ctx, req.Credential, "79775009631-ba2k1s28mru34jo8ephd50h15ouink6o.apps.googleusercontent.com")
+	payload, err := idtoken.Validate(ctx, r.FormValue("credential"), "79775009631-ba2k1s28mru34jo8ephd50h15ouink6o.apps.googleusercontent.com")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Print(payload.Claims)
 
-	utils.WriteMsgRes(w, http.StatusOK, "Success")
+	ea := time.Unix(payload.Expires, 0)
+	fmt.Println(ea)
+
+	ia := time.Unix(payload.IssuedAt, 0)
+	fmt.Println(ia)
+
+	utils.WriteRes(w, http.StatusOK, payload)
 }
