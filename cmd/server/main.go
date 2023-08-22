@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"implight-backend/handlers"
+	"implight-backend/middlewares"
 	"implight-backend/repositories"
 	"implight-backend/usecases"
 	"log"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -26,7 +28,9 @@ func main() {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 
-	// v := validator.New()
+	v := validator.New()
+	tr := repositories.NewTokenRepository(db)
+	m := middlewares.New(tr)
 
 	r := chi.NewRouter()
 
@@ -40,10 +44,14 @@ func main() {
 	r.Mount("/metrics", hh.Routes())
 
 	ar := repositories.NewAccountRepository(db)
-	tr := repositories.NewTokenRepository(db)
 	auc := usecases.NewAccountUsecase(ar, tr)
 	ah := handlers.NewAccountHandler(db, auc)
 	r.Mount("/account", ah.Routes())
+
+	hr := repositories.NewHighlightRepository(db)
+	huc := usecases.NewHighlightUsecase(hr)
+	hhl := handlers.NewHighlightHandler(huc, m, v)
+	r.Mount("/highlights", hhl.Routes())
 
 	http.ListenAndServe(":3000", r)
 

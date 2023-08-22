@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func JSNDecode(r *http.Request, d interface{}) error {
+func JSNDecode(r *http.Request, d interface{}) AppErr {
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 

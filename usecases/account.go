@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-	"fmt"
 	"implight-backend/domain"
 	"implight-backend/utils"
 	"time"
@@ -42,8 +41,6 @@ func (u *accountUsecase) LogIn(ctx context.Context, token string, pl *idtoken.Pa
 		}
 	}
 
-	fmt.Println(token)
-	fmt.Printf("%d", len(token))
 	tkreq := domain.AccessToken{UserID: user.ID, IssuedAt: time.Unix(pl.IssuedAt, 0), ExpiresAt: time.Unix(pl.Expires, 0), IDToken: token}
 	res, err = u.trepo.Create(ctx, tkreq)
 	if err != nil {
