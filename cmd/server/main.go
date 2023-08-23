@@ -54,5 +54,4 @@ func main() {
 	r.Mount("/highlights", hhl.Routes())
 
 	http.ListenAndServe(":3000", r)
-
 }

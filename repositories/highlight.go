@@ -18,7 +18,21 @@ func NewHighlightRepository(db *pgxpool.Pool) domain.HighlightRepository {
 }
 
 func (r *highlightRepository) Create(ctx context.Context, req domain.Highlight) (domain.Highlight, utils.AppErr) {
-	return domain.Highlight{}, nil
+	res := domain.Highlight{}
+	var id int
+
+	sql := `
+	INSERT INTO highlights (user_id, created_at, text, url)
+	VALUES ($1, $1, $3, $4) RETURNING id`
+
+	if err := r.db.QueryRow(ctx, sql, req.UserID, req.CreatedAt, req.Text, req.URL).Scan(&id); err != nil {
+		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
+	}
+
+	res = domain.Highlight(req)
+	res.ID = id
+
+	return res, nil
 }
 
 func (r *highlightRepository) List(ctx context.Context, req domain.ListHighlight) (int, []domain.Highlight, utils.AppErr) {

@@ -28,12 +28,7 @@ func (r *accountRepository) Create(ctx context.Context, req domain.User) (domain
 	VALUES ($1, $2, $3) RETURNING id`
 
 	if err := r.db.QueryRow(ctx, sql, req.Name, req.Email, req.Picture).Scan(&id); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return res, utils.NewAppErr(err.Error(), utils.ERR_OBJ_NOT_FOUND)
-		}
-
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
-
 	}
 
 	res = domain.User(req)
