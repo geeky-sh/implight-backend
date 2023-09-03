@@ -54,8 +54,8 @@ type GetHighlightRes struct {
 }
 
 type ListHighlightRes struct {
-	Count   int `json:"total_count"`
-	Results []GetHighlightRes
+	Count   int               `json:"total_count"`
+	Results []GetHighlightRes `json:"results"`
 }
 
 // ---- end ----

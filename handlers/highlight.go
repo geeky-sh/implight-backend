@@ -6,6 +6,7 @@ import (
 	"implight-backend/middlewares"
 	"implight-backend/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -39,9 +40,31 @@ func (h *highlightHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := utils.JSNDecode(r, &req); err != nil {
-		utils.WriteAppErrRes(w, err)
-		return
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		req.Page = 1
+	} else {
+		v, err := strconv.Atoi(page)
+		if err != nil {
+			utils.WriteMsgRes(w, http.StatusBadRequest, "Incorrect page value")
+		}
+		req.Page = v
+	}
+
+	limit := r.URL.Query().Get("limit")
+	if limit == "" {
+		req.Limit = 10
+	} else {
+		v, err := strconv.Atoi(limit)
+		if err != nil {
+			utils.WriteMsgRes(w, http.StatusBadRequest, "Incorrect limit value")
+		}
+		req.Limit = v
+	}
+
+	url := r.URL.Query().Get("url")
+	if url != "" {
+		req.URL = url
 	}
 
 	res, aerr := h.uc.List(ctx, userID, req)

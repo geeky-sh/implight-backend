@@ -15,8 +15,8 @@ type User struct {
 	Email         string    `bun:"email,notnull"`
 	Name          string    `bun:"name"`
 	Picture       string    `bun:"picture"`
-	CreatedAt     time.Time `bun:"created_at,notnull,default=current_timestamp"`
-	UpdatedAt     time.Time `bun:"updated_at,notnull,default=current_timestamp"`
+	CreatedAt     time.Time `bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 }
 
 type AccessToken struct {
@@ -24,7 +24,7 @@ type AccessToken struct {
 	UUID          string    `json:"uuid" bun:"uuid,pk"`
 	IDToken       string    `json:"id_token" bun:"id_token,notnull"`
 	IssuedAt      time.Time `json:"issued_at" bun:"issued_at,notnull"`
-	ExpiresAt     time.Time `json:"expires_at" bun:"expires_at,nonull"`
+	ExpiresAt     time.Time `json:"expires_at" bun:"expires_at,notnull"`
 	UserID        int       `json:"-" bun:"user_id,notnull"`
 	User          User      `json:"-" bun:"rel:belongs-to,join:user_id=id"`
 }
