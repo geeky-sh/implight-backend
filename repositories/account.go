@@ -9,12 +9,11 @@ import (
 )
 
 type accountRepository struct {
-	table string
-	db    *bun.DB
+	db *bun.DB
 }
 
 func NewAccountRepository(db *bun.DB) domain.AccountRepository {
-	return &accountRepository{"users", db}
+	return &accountRepository{db}
 }
 
 func (r *accountRepository) Create(ctx context.Context, req domain.User) (domain.User, utils.AppErr) {
@@ -45,12 +44,11 @@ func (r *accountRepository) GetByEmail(ctx context.Context, email string) (domai
 }
 
 type tokenRepository struct {
-	table string
-	db    *bun.DB
+	db *bun.DB
 }
 
 func NewTokenRepository(db *bun.DB) domain.TokenRepository {
-	return &tokenRepository{db: db, table: "tokens"}
+	return &tokenRepository{db: db}
 }
 
 func (r *tokenRepository) Create(ctx context.Context, req domain.AccessToken) (domain.AccessToken, utils.AppErr) {

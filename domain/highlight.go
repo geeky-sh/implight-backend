@@ -4,16 +4,19 @@ import (
 	"context"
 	"implight-backend/utils"
 	"time"
+
+	"github.com/uptrace/bun"
 )
 
 // ---- schema ----
 
 type Highlight struct {
-	ID        int
-	UserID    int
-	CreatedAt time.Time
-	Text      string
-	URL       string
+	bun.BaseModel `bun:"table:highlights"`
+	ID            int       `bun:"id,pk,autoincrement"`
+	UserID        int       `bun:"user_id,notnull"`
+	CreatedAt     time.Time `bun:"created_at,notnull,default:current_timestamp"`
+	Text          string    `bun:"text,notnull"`
+	URL           string    `bun:"url,notnull"`
 }
 
 type ListHighlight struct {
@@ -78,7 +81,7 @@ func (r CreateHighlightReq) ToDB(userID int) Highlight {
 }
 
 func (r Highlight) ToRes() GetHighlightRes {
-	return GetHighlightRes(r)
+	return GetHighlightRes{ID: r.ID, UserID: r.UserID, CreatedAt: r.CreatedAt, Text: r.Text, URL: r.URL}
 }
 
 func (r ListHighlightsReq) ToDB(userID int) ListHighlight {

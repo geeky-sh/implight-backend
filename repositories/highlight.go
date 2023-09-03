@@ -9,12 +9,11 @@ import (
 )
 
 type highlightRepository struct {
-	db    *bun.DB
-	table string
+	db *bun.DB
 }
 
 func NewHighlightRepository(db *bun.DB) domain.HighlightRepository {
-	return &highlightRepository{db: db, table: "highlights"}
+	return &highlightRepository{db: db}
 }
 
 func (r *highlightRepository) Create(ctx context.Context, req domain.Highlight) (domain.Highlight, utils.AppErr) {
