@@ -6,6 +6,7 @@ import (
 	"implight-backend/utils"
 	"time"
 
+	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
 
@@ -41,7 +42,8 @@ func (u *accountUsecase) LogIn(ctx context.Context, token string, pl *idtoken.Pa
 		}
 	}
 
-	tkreq := domain.AccessToken{UserID: user.ID, IssuedAt: time.Unix(pl.IssuedAt, 0), ExpiresAt: time.Unix(pl.Expires, 0), IDToken: token}
+	tkreq := domain.AccessToken{UserID: user.ID, IssuedAt: time.Unix(pl.IssuedAt, 0),
+		ExpiresAt: time.Unix(pl.Expires, 0), IDToken: token, UUID: uuid.New().String()}
 	res, err = u.trepo.Create(ctx, tkreq)
 	if err != nil {
 		return res, err

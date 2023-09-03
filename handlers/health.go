@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/uptrace/bun"
 )
 
 type healthHandler struct {
-	db *pgxpool.Pool
+	db *bun.DB
 }
 
-func NewHealthHandler(db *pgxpool.Pool) healthHandler {
+func NewHealthHandler(db *bun.DB) healthHandler {
 	return healthHandler{db}
 }
 
@@ -23,10 +23,9 @@ func (h *healthHandler) Routes() http.Handler {
 }
 
 func (h *healthHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	if err := h.db.Ping(ctx); err != nil {
+	if err := h.db.Ping(); err != nil {
 		utils.WriteMsgRes(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	utils.WriteMsgRes(w, http.StatusOK, "OK")

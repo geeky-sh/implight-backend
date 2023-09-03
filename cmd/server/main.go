@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"implight-backend/handlers"
 	"implight-backend/middlewares"
 	"implight-backend/repositories"
@@ -14,8 +14,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 func main() {
@@ -23,10 +26,9 @@ func main() {
 		log.Fatalf("Unable to load .env %v\n", err)
 	}
 
-	db, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
-	if err != nil {
-		log.Fatalf("Unable to connect to database: %v\n", err)
-	}
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(os.Getenv("DB_URL"))))
+	db := bun.NewDB(sqldb, pgdialect.New())
+	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 
 	v := validator.New()
 	tr := repositories.NewTokenRepository(db)

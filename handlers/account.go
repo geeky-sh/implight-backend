@@ -6,16 +6,16 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/uptrace/bun"
 	"google.golang.org/api/idtoken"
 )
 
 type accountHandler struct {
-	db *pgxpool.Pool
+	db *bun.DB
 	uc domain.AccountUsecase
 }
 
-func NewAccountHandler(db *pgxpool.Pool, uc domain.AccountUsecase) accountHandler {
+func NewAccountHandler(db *bun.DB, uc domain.AccountUsecase) accountHandler {
 	return accountHandler{db: db, uc: uc}
 }
 

@@ -5,15 +5,15 @@ import (
 	"implight-backend/domain"
 	"implight-backend/utils"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/uptrace/bun"
 )
 
 type highlightRepository struct {
-	db    *pgxpool.Pool
+	db    *bun.DB
 	table string
 }
 
-func NewHighlightRepository(db *pgxpool.Pool) domain.HighlightRepository {
+func NewHighlightRepository(db *bun.DB) domain.HighlightRepository {
 	return &highlightRepository{db: db, table: "highlights"}
 }
 
@@ -21,11 +21,8 @@ func (r *highlightRepository) Create(ctx context.Context, req domain.Highlight) 
 	res := domain.Highlight{}
 	var id int
 
-	sql := `
-	INSERT INTO highlights (user_id, created_at, text, url)
-	VALUES ($1, $1, $3, $4) RETURNING id`
-
-	if err := r.db.QueryRow(ctx, sql, req.UserID, req.CreatedAt, req.Text, req.URL).Scan(&id); err != nil {
+	_, err := r.db.NewInsert().Model(&req).Returning("id").Exec(ctx, &id)
+	if err != nil {
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
 	}
 

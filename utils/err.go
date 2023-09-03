@@ -6,6 +6,8 @@ const ERR_OBJ_NOT_FOUND = 101
 const ERR_JSON_PARSE = 102
 const ERR_UNKNOWN = 999
 
+const ERR_MSG_SQL_NOT_FOUND = "sql: no rows in result set"
+
 type AppErr interface {
 	Error() string
 	ErrCode() int

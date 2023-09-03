@@ -2,20 +2,18 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"implight-backend/domain"
 	"implight-backend/utils"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/uptrace/bun"
 )
 
 type accountRepository struct {
 	table string
-	db    *pgxpool.Pool
+	db    *bun.DB
 }
 
-func NewAccountRepository(db *pgxpool.Pool) domain.AccountRepository {
+func NewAccountRepository(db *bun.DB) domain.AccountRepository {
 	return &accountRepository{"users", db}
 }
 
@@ -23,75 +21,54 @@ func (r *accountRepository) Create(ctx context.Context, req domain.User) (domain
 	res := domain.User{}
 	var id int
 
-	sql := `
-	INSERT INTO users (name, email, picture)
-	VALUES ($1, $2, $3) RETURNING id`
-
-	if err := r.db.QueryRow(ctx, sql, req.Name, req.Email, req.Picture).Scan(&id); err != nil {
+	_, err := r.db.NewInsert().Model(&req).Returning("id").Exec(ctx, &id)
+	if err != nil {
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
 	}
 
 	res = domain.User(req)
 	res.ID = id
-
 	return res, nil
 }
+
 func (r *accountRepository) GetByEmail(ctx context.Context, email string) (domain.User, utils.AppErr) {
 	res := domain.User{}
 
-	sql := `
-	SELECT id, name, email, picture, created_at, updated_at
-	from users where email=$1`
-	if err := r.db.QueryRow(ctx, sql, email).Scan(&res.ID, &res.Name, &res.Email, &res.Picture, &res.CreatedAt, &res.UpdatedAt); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+	if err := r.db.NewSelect().Model(&res).Where("email = ?", email).Limit(1).Scan(ctx); err != nil {
+		if err.Error() == utils.ERR_MSG_SQL_NOT_FOUND {
 			return res, utils.NewAppErr(err.Error(), utils.ERR_OBJ_NOT_FOUND)
 		}
-
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
 	}
+
 	return res, nil
 }
 
 type tokenRepository struct {
 	table string
-	db    *pgxpool.Pool
+	db    *bun.DB
 }
 
-func NewTokenRepository(db *pgxpool.Pool) domain.TokenRepository {
+func NewTokenRepository(db *bun.DB) domain.TokenRepository {
 	return &tokenRepository{db: db, table: "tokens"}
 }
 
 func (r *tokenRepository) Create(ctx context.Context, req domain.AccessToken) (domain.AccessToken, utils.AppErr) {
 	res := domain.AccessToken{}
-	var idToken string
 
-	sql := `
-	INSERT INTO tokens (id_token, issued_at, expires_at, user_id)
-	VALUES (gen_random_uuid(), $1, $2, $3) RETURNING id_token`
-	if err := r.db.QueryRow(ctx, sql, req.IssuedAt, req.ExpiresAt, req.UserID).Scan(&idToken); err != nil {
-		if err != nil {
-			return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
-		}
+	_, err := r.db.NewInsert().Model(&req).Exec(ctx)
+	if err != nil {
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
 	}
 
 	res = domain.AccessToken(req)
-	res.IDToken = idToken
-
 	return res, nil
 }
 
 func (r *tokenRepository) Get(ctx context.Context, tk string) (domain.AccessToken, utils.AppErr) {
 	res := domain.AccessToken{}
 
-	sql := `
-	SELECT id_token, issued_at, expires_at, user_id
-	FROM tokens WHERE id_token=$1`
-	if err := r.db.QueryRow(ctx, sql, tk).Scan(&res.IDToken, &res.IssuedAt, &res.ExpiresAt, &res.UserID); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return res, utils.NewAppErr(err.Error(), utils.ERR_OBJ_NOT_FOUND)
-		}
-
+	if err := r.db.NewSelect().Model(&res).Where("id_token = ?", tk).Scan(ctx); err != nil {
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
 	}
 
