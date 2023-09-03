@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"implight-backend/domain"
 	"implight-backend/middlewares"
 	"implight-backend/utils"
@@ -55,6 +56,7 @@ func (h *highlightHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *highlightHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req := domain.CreateHighlightReq{}
+	fmt.Println("1")
 
 	userID, aerr := middlewares.UserID(ctx)
 	if aerr != nil {

@@ -66,7 +66,7 @@ func (r *tokenRepository) Create(ctx context.Context, req domain.AccessToken) (d
 func (r *tokenRepository) Get(ctx context.Context, tk string) (domain.AccessToken, utils.AppErr) {
 	res := domain.AccessToken{}
 
-	if err := r.db.NewSelect().Model(&res).Where("id_token = ?", tk).Scan(ctx); err != nil {
+	if err := r.db.NewSelect().Model(&res).Where("uuid = ?", tk).Scan(ctx); err != nil {
 		return res, utils.NewAppErr(err.Error(), utils.ERR_UNKNOWN)
 	}
 
